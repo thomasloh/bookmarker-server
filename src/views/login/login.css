@@ -1,0 +1,68 @@
+/*Vars*/
+/*mixins*/
+/*Styles*/
+.container {
+  width: 100%;
+  height: 10em;
+  position: fixed;
+  top: 35%;
+  left: 20%;
+}
+.container .login-box {
+  display: inline-block;
+  position: relative;
+  padding: 4em 12em 3em 15em;
+  margin-left: 1em;
+  border-radius: 2px;
+  -webkit-transition: all 0.2s linear;
+  -moz-transition: all 0.2s linear;
+  -o-transition: all 0.2s linear;
+  transition: all 0.2s linear;
+  box-shadow: 3px 3px 5px #888888;
+  -webkit-box-shadow: 3px 3px 5px #888888;
+  -moz-box-shadow: 3px 3px 5px #888888;
+}
+.container .login-box:hover {
+  box-shadow: 10px 10px 5px #888888;
+  -webkit-box-shadow: 10px 10px 5px #888888;
+  -moz-box-shadow: 10px 10px 5px #888888;
+  -webkit-transform: translate3d(-4px, -4px, 0px);
+  -moz-transform: translate3d(-4px, -4px, 0px);
+  -ms-transform: translate3d(-4px, -4px, 0px);
+  -o-transform: translate3d(-4px, -4px, 0px);
+}
+.container .login-box:hover.twitter {
+  background: #4aa3df;
+}
+.container .login-box:hover.facebook {
+  background: #2e8ece;
+}
+.container .login-box .logo {
+  height: 100%;
+  width: 30%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 1.3em 1em 1em 2em;
+}
+.container .login-box .signin-text {
+  font-family: Raleway, sans-serif;
+  color: white;
+  font-size: 20px;
+  position: absolute;
+  top: 50px;
+  right: 80px;
+  cursor: pointer;
+}
+.container .login-box.twitter {
+  background: #3498db;
+}
+.container .login-box.twitter .logo {
+  background: url('/twitter.png') no-repeat;
+}
+.container .login-box.facebook {
+  background: #2980b9;
+}
+.container .login-box.facebook .logo {
+  background: url('/fb.png') no-repeat;
+}

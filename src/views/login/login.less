@@ -1,0 +1,124 @@
+/*Vars*/
+@twitter-color: #3498db;
+@fb-color: #2980b9;
+
+/*mixins*/
+// CSS3 Animations
+.animation(@name, @duration: 300ms, @ease: ease, @forwards: forwards) {
+  -webkit-animation: @name @duration @ease @forwards;
+  -moz-animation:    @name @duration @ease @forwards;
+  -ms-animation:     @name @duration @ease @forwards;
+}
+// CSS3 Transforms
+.transform(@string){
+  -webkit-transform: e(@string);
+  -moz-transform:    e(@string);
+  -ms-transform:     e(@string);
+  -o-transform:      e(@string);
+}
+
+.transform-style(@string) {
+  -webkit-transform-style : @string;
+  transform-style         : @string;
+}
+
+.backface-visibility(@string) {
+  -webkit-backface-visibility   : @string; /* Chrome and Safari */
+  -moz-backface-visibility      : @string; /* Firefox */
+  -ms-backface-visibility       : @string; /* Internet Explorer */
+  backface-visibility           : @string;
+}
+
+.perspective(@n) {
+  -webkit-perspective : @n; /* Safari and Chrome */
+  perspective         : @n;
+}
+
+.transition-multiple(@transition) {
+  -webkit-transition: e(@transition);
+  -moz-transition:    e(@transition);
+  -ms-transition:     e(@transition);
+  -o-transition:      e(@transition);
+}
+
+.transition(@transition) {
+  -webkit-transition: e(@transition);
+     -moz-transition: e(@transition);
+       -o-transition: e(@transition);
+          transition: e(@transition);
+}
+
+.transition(@transition, @t) when (isstring(@t)) {
+  -webkit-transition: ~`"-webkit-@{transition}"` e(@t);
+  -moz-transition:    ~`"-moz-@{transition}"` e(@t);
+  -ms-transition:     ~`"-ms-@{transition}"` e(@t);
+  -o-transition:      ~`"-o-@{transition}"` e(@t);
+}
+
+.box-shadow(@style, @c) when (iscolor(@c)) {
+  box-shadow:         @style @c;
+  -webkit-box-shadow: @style @c;
+  -moz-box-shadow:    @style @c;
+}
+
+.box-shadow(@style, @alpha: 50%) when (isnumber(@alpha)) {
+  .box-shadow(@style, rgba(0, 0, 0, @alpha));
+}
+
+/*Styles*/
+.container {
+  width: 100%;
+  height: 10em;
+  position: fixed;
+  top: 35%;
+  left: 20%;
+  .login-box {
+    display: inline-block;
+    position: relative;
+    padding: 4em 12em 3em 15em;
+    margin-left: 1em;
+    border-radius: 2px;
+    .transition("all 0.2s linear");
+    .box-shadow(3px 3px 5px, #888);
+    &:hover {
+      .box-shadow(10px 10px 5px, #888);
+      .transform(translate3d(-4px,-4px,0px));
+      &.twitter {
+        background: lighten(@twitter-color, 5%);
+      }
+      &.facebook {
+        background: lighten(@fb-color, 5%);
+      }
+    }
+    .logo {
+      height: 100%;
+      width: 30%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin: 1.3em 1em 1em 2em;
+    }
+    .signin-text {
+      font-family: Raleway, sans-serif;
+      color: white;
+      font-size: 20px;
+      position: absolute;
+      top: 50px;
+      right: 80px;
+      cursor: pointer;
+    }
+    &.twitter {
+      background: @twitter-color;
+      .logo {
+        background: url('/twitter.png') no-repeat;
+      }
+    }
+    &.facebook {
+      background: @fb-color;
+      .logo {
+        background: url('/fb.png') no-repeat;
+      }
+    }
+  }
+}
+

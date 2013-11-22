@@ -1,0 +1,19 @@
+{
+  "name": "leafy",
+  "version": "0.0.1",
+  "description": "A bookmarking service",
+  "main": "server.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "thomasloh",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "express": "~3.4.4",
+    "passport": "~0.1.17",
+    "sequelize": "~2.0.0-beta.1",
+    "q": "~0.9.7",
+    "passport-twitter": "~1.0.2",
+    "pg": "~2.8.3"
+  }
+}
