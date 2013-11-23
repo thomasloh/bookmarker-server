@@ -1,6 +1,7 @@
 # Import modules
 passport    = require 'passport'
 twitterAuth = require './twitter'
+facebookAuth = require './facebook'
 
 
 # Reusables
@@ -27,6 +28,7 @@ auth = {
 
     # Setup strategies
     twitterAuth.setup passport, app
+    facebookAuth.setup passport, app
 
   middleware: () ->
     (req, res, next) =>
@@ -39,8 +41,6 @@ auth = {
     return req.isAuthenticated()
 
 }
-
-
 
 
 

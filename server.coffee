@@ -1,7 +1,8 @@
 
 # Import modules
-express = require 'express'
-modules = require('./src/modules')
+express    = require 'express'
+RedisStore = require('connect-redis') express
+modules    = require('./src/modules')
 
 # Get modules
 auth    = modules.auth
@@ -16,7 +17,16 @@ app.use express.logger("dev")
 app.use express.bodyParser()
 app.use express.methodOverride()
 app.use express.cookieParser()
-app.use express.session { secret: 'whatever you think, think the opposite' }
+app.use express.session {
+  secret: 'whatever you think, think the opposite'
+  store: new RedisStore {
+    host: 'localhost',
+    port: 6379
+  }
+  cookie: {
+    maxAge: 3600000
+  }
+}
 
 # Server variables
 app.set 'port', 8005

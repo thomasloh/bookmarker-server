@@ -14,6 +14,8 @@
     "sequelize": "~2.0.0-beta.1",
     "q": "~0.9.7",
     "passport-twitter": "~1.0.2",
-    "pg": "~2.8.3"
+    "pg": "~2.8.3",
+    "connect-redis": "~1.4.6",
+    "passport-facebook": "~1.0.2"
   }
 }
