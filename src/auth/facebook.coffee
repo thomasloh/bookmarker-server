@@ -15,7 +15,7 @@ auth = {
       process.nextTick () =>
         facebookId = profile.id
 
-        @api().get('user').findOrCreate({
+        @api().$get('user').findOrCreate({
           socialId   : facebookId
           socialType : 'facebook'
         }, {

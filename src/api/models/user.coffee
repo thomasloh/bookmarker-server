@@ -1,18 +1,16 @@
 # Import modules
-
-# Internals
-model = null
-$app   = null
+BaseModel = require './_base'
+_         = require 'underscore'
 
 # Facade
-user = {
+class User extends BaseModel
 
   # Define schema for User
   setup: (app, sequelize, Sequelize) ->
 
-    $app = app
+    @app = app
 
-    model = sequelize.define 'User', {
+    @model = sequelize.define 'User', {
       name      : {
         type: Sequelize.STRING
         validate: {
@@ -45,17 +43,6 @@ user = {
       }
     }
 
-
-  $: () ->
-    return model if model
-
-  api: () ->
-    $app.get 'api'
-
-  pipe: (req, res, callback) ->
-    return (results) ->
-      res.json results
-
   expose: () ->
     # GET    /users     - Retrieves all users
     # GET    /users/:id - Retrieves a specific user
@@ -73,34 +60,89 @@ user = {
     _p = @api().prefix()
 
     # Get all users
-    $app.get _p + '/users', (req, res) =>
+    @app.get _p + '/users', (req, res) =>
       @all().then @pipe req, res
 
     # Get specific user by id
-    $app.get _p + '/users/:id', (req, res) =>
+    @app.get _p + '/users/:id', (req, res) =>
       @get(req.params.id).then @pipe req, res
 
     # Creates a new user
-    $app.post _p + '/users', (req, res) =>
+    @app.post _p + '/users', (req, res) =>
       @create req.body, res
 
     # Updates an existing user
-    $app.put _p + '/users/:id', (req, res) =>
+    @app.put _p + '/users/:id', (req, res) =>
       @update req.params.id, req.body, res
 
     # Deletes an existing user
-    $app.delete _p + '/users/:id', (req, res) =>
+    @app.delete _p + '/users/:id', (req, res) =>
       @destroy req.params.id, res
 
+    # Gets all bookmarks by a user
+    @app.get _p + '/users/:id/bookmarks', (req, res) =>
+      @api()
+      .get('user-bookmark')
+      .getByUser(req.params.id)
+      .success () ->
+        # TODO
+
+    # Creates bookmark(s) for a user
+    @app.post _p + '/users/:id/bookmarks', (req, res) =>
+
+      # Grab user id
+      userId = req.params.id
+
+      # TODO: Bulk create
+      if req.body.bookmarks && _.isArray req.body.bookmarks
+
+        # Grab bookmarks from body (can be array)
+        bookmarks = req.body.bookmarks
+
+
+      else
+
+        # Grab single bookmark
+        bookmark = req.body
+
+        # Grab user
+        @get(userId)
+        .error () ->
+          res.send 400, {
+            errors: {
+              message: 'User not found'
+            }
+          }
+        .success (user) =>
+
+          # Next, create/find the bookmark
+          @api()
+          .get('bookmark')
+          .findOrCreate bookmark, (errors, b) =>
+            if errors
+              res.send 400, {
+                errors: errors
+              }
+            else
+              # Then create user bookmark
+              user
+              .addBookmark(b)
+              .success (ub) ->
+                res.send 201, ub
+              .error (e) ->
+                res.send 400, {
+                  errors: errors
+                }
+
   all: () ->
-    @api().get('user').all()
+    @api().$get('user').all()
 
   get: (id) ->
-    @api().get('user').find(id)
+    @api().$get('user').find(id)
 
   create: (attrs, res) ->
     # Build new instance
-    user = @api().get('user').build attrs
+    user = @api().$get('user').build attrs
 
     # Validate
     user
@@ -174,11 +216,17 @@ user = {
           }
         }
 
-}
+  addBookmark: (uid, bookmarkAttrs) ->
+
+    # Add bookmark to Bookmark table
+
+      # Add to
+
+
 
 
 
 
 
 # Exports
-module.exports = user
+module.exports = new User

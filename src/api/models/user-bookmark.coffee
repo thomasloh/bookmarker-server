@@ -1,18 +1,16 @@
 # Import modules
-
-# Internals
-model = null
-$app = null
+BaseModel = require './_base'
+Q         = require 'q'
 
 # Facade
-userbookmark = {
+class UserBookmark extends BaseModel
 
   # Define schema for UserBookmark
   setup: (app, sequelize, Sequelize) ->
 
-    $app = app
+    @app = app
 
-    model = sequelize.define 'UserBookmark', {
+    @model = sequelize.define 'UserBookmark', {
       facebook  : {
         type      : Sequelize.TEXT
         allowNull : true
@@ -33,12 +31,38 @@ userbookmark = {
         type: Sequelize.BOOLEAN
         defaultValue: false
       }
+      BookmarkId: {
+        type: Sequelize.INTEGER
+        references: "Bookmarks"
+        referencesKey: "id"
+      }
+      UserId: {
+        type: Sequelize.INTEGER
+        references: "Users"
+        referencesKey: "id"
+      }
+
     }
 
-  $: () ->
-    return model if model
+  # Retrieves user bookmarks
+  getByUser: (uid) ->
+    @api()
+    .$get('user-bookmark')
+    .find {
+      where: {
+        UserId: uid
+      }
+    }
 
-}
+  # TODO: Bulk creates user bookmarks
+  bulkCreate: (bookmarks) ->
+
+  # Creates user bookmark
+  create: (userBookmark) ->
+    console.log(userBookmark)
+    @api()
+    .$get('user-bookmark')
+    .create userBookmark
 
 # Exports
-module.exports = userbookmark
+module.exports = new UserBookmark

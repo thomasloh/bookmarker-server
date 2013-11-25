@@ -16,6 +16,10 @@
     "passport-twitter": "~1.0.2",
     "pg": "~2.8.3",
     "connect-redis": "~1.4.6",
-    "passport-facebook": "~1.0.2"
+    "passport-facebook": "~1.0.2",
+    "underscore": "~1.5.2"
+  },
+  "devDependencies": {
+    "request": "~2.27.0"
   }
 }

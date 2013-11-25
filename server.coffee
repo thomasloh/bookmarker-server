@@ -2,11 +2,14 @@
 # Import modules
 express    = require 'express'
 RedisStore = require('connect-redis') express
-modules    = require('./src/modules')
+modules    = require './src/modules'
 
 # Get modules
 auth    = modules.auth
 api     = modules.api
+
+# Node configs
+Error.stackTraceLimit = 10
 
 # Init app
 app = express()
@@ -20,7 +23,7 @@ app.use express.cookieParser()
 app.use express.session {
   secret: 'whatever you think, think the opposite'
   store: new RedisStore {
-    host: 'localhost',
+    host: 'localhost'
     port: 6379
   }
   cookie: {

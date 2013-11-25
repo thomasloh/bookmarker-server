@@ -15,7 +15,7 @@ auth = {
       process.nextTick () =>
         twitterId = profile.id
 
-        @api().get('user').findOrCreate({
+        @api().$get('user').findOrCreate({
           socialId   : twitterId
           socialType : 'twitter'
         }, {

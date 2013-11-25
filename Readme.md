@@ -102,11 +102,13 @@ Q
 <!-- Modules -->
 
 User authentication (social)
- - API Token
  - Session persistence
  - Facebook & Twitter
 
 Users API
+
+
+
 
 Bookmarks API
 
@@ -132,6 +134,9 @@ Possible features
 Realtime bookmark clicking notify all clients - websockets
 
 
+Testing on API
+Secure/separate out restAPI API Token
+
+
 TODO:
 
-pg_config thing

@@ -54,17 +54,20 @@ api = {
 
     # @drop()
 
-    # Recreates table
-    @get('user').sync()
-    @get('bookmark').sync()
-
     # Setup joins
-    @get('user').hasMany @get('bookmark'), {
+    @$get('user').hasMany @$get('bookmark'), {
       joinTableModel: UserBookmark.$()
+      onDelete      : 'restrict'
     }
-    @get('bookmark').hasMany @get('user'), {
+    @$get('bookmark').hasMany @$get('user'), {
       joinTableModel: UserBookmark.$()
+      onDelete      : 'restrict'
     }
+
+    # Recreates table
+    @$get('user').sync()
+    @$get('bookmark').sync()
+    @$get('user-bookmark').sync()
 
     sequelize.sync()
 
@@ -72,8 +75,12 @@ api = {
     @expose()
 
   # Get model
-  get: (type) ->
+  $get: (type) ->
     return models[type].$() if models[type]
+
+  # Get Sequelize class
+  get: (type) ->
+    return models[type] if models[type]
 
   # Expose endpoints
   expose: () ->
@@ -93,9 +100,9 @@ api = {
 
   # Drop all tables
   drop: () ->
-    @get('user').drop()
-    @get('bookmark').drop()
-    UserBookmark.$().drop()
+    # @$get('user-bookmark').drop()
+    # @$get('user').drop()
+    # @$get('bookmark').drop()
 
 
 }
