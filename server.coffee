@@ -35,6 +35,7 @@ app.use express.session {
 app.set 'port', 8005
 app.set 'api', api
 app.set 'auth', auth
+app.set 'test-mode', process.env.NODE_ENV == 'test'
 
 # Setup auth
 auth.setup app

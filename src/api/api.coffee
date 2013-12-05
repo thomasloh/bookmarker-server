@@ -5,12 +5,7 @@ Bookmark     = require './models/bookmark'
 UserBookmark = require './models/user-bookmark'
 
 # Constants
-DB_NAME     = 'leafydb'
-DB_USER     = 'thomasloh'
-DB_PASS     = 'bookmarkmuch'
-DB_URL      = 'leafydb.cw8d91rc6nbp.us-west-2.rds.amazonaws.com'
-DB_PORT     = 5432
-
+_d      = require './configuration/db'
 VERSION = 'v1'
 PREFIX  = 'api'
 
@@ -38,21 +33,24 @@ api = {
     $app = app
 
     # Connect to database
-    sequelize = new Sequelize DB_NAME, DB_USER, DB_PASS, {
+    sequelize = new Sequelize _d.DB_NAME, _d.DB_USER, _d.DB_PASS, {
 
-      host: DB_URL
+      host: _d.DB_URL
 
-      port: DB_PORT
+      port: _d.DB_PORT
 
       dialect: 'postgres'
     }
 
-    # Setup schemas
-    User.setup app, sequelize, Sequelize
-    Bookmark.setup app, sequelize, Sequelize
-    UserBookmark.setup app, sequelize, Sequelize
+    @initTables()
 
-    # @drop()
+
+  initTables: () ->
+
+    # Setup schemas
+    User.setup $app, sequelize, Sequelize
+    Bookmark.setup $app, sequelize, Sequelize
+    UserBookmark.setup $app, sequelize, Sequelize
 
     # Setup joins
     @$get('user').hasMany @$get('bookmark'), {
@@ -64,12 +62,7 @@ api = {
       onDelete      : 'restrict'
     }
 
-    # Recreates table
-    @$get('user').sync()
-    @$get('bookmark').sync()
-    @$get('user-bookmark').sync()
-
-    sequelize.sync()
+    sequelize.sync force: $app.get 'test-mode'
 
     # Expose endpoints
     @expose()
@@ -90,20 +83,34 @@ api = {
     # Secure REST API
     $app.all @prefix() + '*', (req, res, next) ->
 
-      if $app.get('auth').isLoggedIn(req)
+      if $app.get('auth').isLoggedIn(req) || $app.get 'test-mode'
         next()
       else
         res.send 401
 
-    # Users
+    # Entity preprocessors
+    User.preprocess()
+    Bookmark.preprocess()
+
+    # Entity endpoints
     User.expose()
+    Bookmark.expose()
+    UserBookmark.expose()
 
-  # Drop all tables
-  drop: () ->
-    # @$get('user-bookmark').drop()
-    # @$get('user').drop()
-    # @$get('bookmark').drop()
+    # ----------------------------------------------------------------
+    # Test env only
+    # ----------------------------------------------------------------
 
+    if !$app.get 'test-mode'
+      return
+
+    # Delete all users
+    $app.delete @prefix() + '/all/', (req, res) =>
+
+      sequelize
+      .sync(force: true)
+      .success () ->
+        res.send 204
 
 }
 

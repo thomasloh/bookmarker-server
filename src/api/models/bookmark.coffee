@@ -55,6 +55,30 @@ class Bookmark extends BaseModel
       }
     }
 
+  preprocess: () ->
+
+    # ----------------------------------------------------------------
+    # Validations
+    # ----------------------------------------------------------------
+    @app.all '*/bookmarks/:id/*', (req, res, next) =>
+
+      # Grab bookmark id
+      boomarkId = req.params[0]
+
+      # Check for bookmark existence
+      @api()
+      .$get('bookmark')
+      .find(boomarkId)
+      .success (bookmark) =>
+        if bookmark
+          # Tack bookmark found to next middleware
+          req._bookmark = bookmark
+          next()
+        else
+          @errors.NOT_FOUND 'bookmark', res
+      .error () =>
+        @errors.NOT_FOUND 'bookmark', res
+
   expose: () ->
     # GET    /bookmarks     - Retrieves all bookmarks
     # GET    /bookmarks/:id - Retrieves a specific bookmark
@@ -65,117 +89,78 @@ class Bookmark extends BaseModel
     # Get prefix
     _p = @api().prefix()
 
+    # ----------------------------------------------------------------
     # Get all bookmarks
-    @app.get _p + '/bookmarks', (req, res) =>
-      @all().then @pipe req, res
+    # ----------------------------------------------------------------
+    @app.get _p + '/bookmarks/', (req, res) =>
+      @api()
+      .$get('bookmark')
+      .all()
+      .then @pipe req, res
 
+    # ----------------------------------------------------------------
     # Get specific bookmark by id
-    @app.get _p + '/bookmarks/:id', (req, res) =>
-      @get(req.params.id).then @pipe req, res
+    # ----------------------------------------------------------------
+    @app.get _p + '/bookmarks/:id/', (req, res) =>
 
-    # Creates a new bookmark
-    # @app.post _p + '/bookmarks', (req, res) =>
-    #   @create req.body, res
+      # Grab bookmark
+      bookmark = req._bookmark
+      delete req._bookmark
 
+      # Respond
+      res.json bookmark
+
+    # ----------------------------------------------------------------
     # Updates an existing bookmark
-    @app.put _p + '/bookmarks/:id', (req, res) =>
-      @update req.params.id, req.body, res
+    # ----------------------------------------------------------------
+    @app.put _p + '/bookmarks/:id/', (req, res) =>
 
+      return @error.CUSTOM_MESSAGE('Not allowed', res)
+
+
+      # Grab bookmark
+      bookmark = req._bookmark
+      delete req._bookmark
+
+      # Proceed to update bookmark
+      bookmark
+      .updateAttributes(req.body)
+      .success (u) ->
+        # 200 - bookmark updated
+        res.send 200, @deserialize(u.values)
+      .error (errors) ->
+        # 400 - Send validation errors, if any
+        res.send 400, {
+          errors: errors
+        }
+
+    # ----------------------------------------------------------------
     # Deletes an existing bookmark
-    @app.delete _p + '/bookmarks/:id', (req, res) =>
-      @destroy req.params.id, res
+    # ----------------------------------------------------------------
+    @app.delete _p + '/bookmarks/:id/', (req, res) =>
 
-    @app.get _p + '/bookmarks/:id/users', (req, res) =>
-      @api().get('bookmark')
+      return @error.CUSTOM_MESSAGE('Not allowed', res)
 
+      # Grab bookmark
+      bookmark = req._bookmark
+      delete req._bookmark
 
-  all: () ->
-    @api().$get('bookmark').all()
-
-  get: (id) ->
-    @api().$get('bookmark').find(id)
-
-  findOrCreate: (bookmark, callback) ->
-    @api()
-    .$get('bookmark')
-    .findOrCreate(bookmark)
-    .success (b) ->
-      callback null, b
-    .error (errors) ->
-      callback errors
-
-  create: (attrs, callback) ->
-    # Build new instance
-    bookmark = @api().$get('bookmark').build attrs
-
-    # Validate
-    bookmark
-    .validate()
-    .success (errors) ->
-      # Send validation errors, if any
-      if errors
-        callback errors
-      else
-      # Proceed to create bookmark
-        bookmark
-        .save()
-        .success (u) ->
-          callback null, u
-        .error (errors) ->
-          callback errors
-
-  # TODO: Bulk creates bookmarks
-  bulkCreate: (bookmarks) ->
-
-  update: (id, attrs, res) ->
-
-    # Get existing bookmark
-    @get(id)
-    .success (bookmark) ->
-      if bookmark
-        # Proceed to update bookmark
-        bookmark
-        .updateAttributes(attrs)
-        .success (u) ->
-          # 200 - bookmark updated
-          res.send 200, u.values
-        .error (errors) ->
-          # 400 - Send validation errors, if any
-          res.send 400, {
-            errors: errors
-          }
-      else
-        # 400 - bookmark not found
+      # Proceed to delete bookmark
+      bookmark
+      .destroy()
+      .success () ->
+        # 204- bookmark deleted
+        res.send 204
+      .error () ->
+        # 400 - Error deleting bookmark
         res.send 400, {
-          errors: {
-            message: "Bookmark not found"
-          }
+          errors: errors
         }
 
-  destroy: (id, res) ->
-
-    # Get existing bookmark
-    @get(id)
-    .success (bookmark) ->
-      if bookmark
-        # Proceed to delete bookmark
-        bookmark
-        .destroy()
-        .success () ->
-          # 204- bookmark deleted
-          res.send 204
-        .error () ->
-          # 400 - Error deleting bookmark
-          res.send 400, {
-            errors: errors
-          }
-      else
-        # 400 - bookmark not found
-        res.send 400, {
-          errors: {
-            message: "Bookmark not found"
-          }
-        }
+    # ----------------------------------------------------------------
+    # TODO: Get users of a bookmark
+    # ----------------------------------------------------------------
+    @app.get _p + '/bookmarks/:id/users/', (req, res) =>
 
 
 

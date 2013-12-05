@@ -1,6 +1,5 @@
 --compilers coffee:coffee-script
 --reporter min
---ignore-leaks
 --ui bdd
 --recursive
 --colors
