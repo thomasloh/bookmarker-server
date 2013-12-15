@@ -14,7 +14,13 @@ class Bookmark extends BaseModel
       url      : {
         type: Sequelize.TEXT
         validate: {
-          isUrl  : true
+          isUrl    : true
+          notEmpty : true
+        }
+      }
+      title    : {
+        type: Sequelize.TEXT
+        validate: {
           notEmpty : true
         }
       }
@@ -90,6 +96,13 @@ class Bookmark extends BaseModel
     _p = @api().prefix()
 
     # ----------------------------------------------------------------
+    # Creates a new bookmark
+    # ----------------------------------------------------------------
+    @app.post _p + '/bookmarks/', (req, res) =>
+
+      return @errors.CUSTOM_MESSAGE('Not allowed', res)
+
+    # ----------------------------------------------------------------
     # Get all bookmarks
     # ----------------------------------------------------------------
     @app.get _p + '/bookmarks/', (req, res) =>
@@ -116,7 +129,6 @@ class Bookmark extends BaseModel
     @app.put _p + '/bookmarks/:id/', (req, res) =>
 
       return @error.CUSTOM_MESSAGE('Not allowed', res)
-
 
       # Grab bookmark
       bookmark = req._bookmark

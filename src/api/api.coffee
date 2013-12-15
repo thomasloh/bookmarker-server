@@ -78,15 +78,27 @@ api = {
   # Expose endpoints
   expose: () ->
 
-    # TODO: CORS
+    # Allow CORS
+    $app.all '*', (req, res, next) ->
+      res.header "Access-Control-Allow-Origin", "*"
+      res.header "Access-Control-Allow-Credentials", true
+      res.header "Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Origin, Accept"
+      res.header "Access-Control-Allow-Methods", "POST, GET, PUT, DELETE"
+      next();
 
-    # Secure REST API
+    # Handle preflight requests
+    $app.options '*', (req, res, next) ->
+      console.log "Approving preflight request"
+      res.send 200
+
+    # Secure REST API with auth
     $app.all @prefix() + '*', (req, res, next) ->
 
       if $app.get('auth').isLoggedIn(req) || $app.get 'test-mode'
         next()
       else
         res.send 401
+
 
     # Entity preprocessors
     User.preprocess()

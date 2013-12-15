@@ -28,6 +28,7 @@ class BaseModel
       'twitter'  : true
       'linkedin' : true
       'pinterest': true
+      'social'   : true
     }
     obj = {}
     for key, value of o
@@ -45,10 +46,11 @@ class BaseModel
       'twitter'  : true
       'linkedin' : true
       'pinterest': true
+      'social'   : true
     }
     obj = {}
     for key, value of o
-      if social[key]
+      if social[key] && _.isString(value)
         obj[key] = JSON.parse value
       else
         obj[key] = value
@@ -57,16 +59,23 @@ class BaseModel
 
   errors: {
     DB_ERROR: (e, res) ->
+      if e
+        console.log(e)
+
       res.send 400, {
         errors: e
       }
     NOT_FOUND: (type, res) ->
+
       res.send 400, {
         errors: {
           message: type + ' not found'
         }
       }
     CUSTOM_MESSAGE: (message, res) ->
+      if message
+        console.log(message)
+
       res.send 400, {
         errors: {
           message: message

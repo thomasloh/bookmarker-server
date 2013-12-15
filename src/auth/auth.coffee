@@ -38,7 +38,7 @@ auth = {
         res.redirect '/login'
 
   isLoggedIn: (req) ->
-    return req.isAuthenticated()
+    req.isAuthenticated()
 
 }
 

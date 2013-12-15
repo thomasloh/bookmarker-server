@@ -30,6 +30,8 @@ app.use express.session {
     maxAge: 3600000
   }
 }
+app.use express['static']('src/views/login')
+
 
 # Server variables
 app.set 'port', 8005
@@ -46,13 +48,45 @@ api.setup app
 # Express configurations (cont)
 app.use app.router
 
+# Login handler
+app.get '/login', (req, res) ->
+  if req.isAuthenticated()
+    res.redirect '/'
+  else
+    res.sendfile __dirname + '/src/views/login/login.html'
+
+# Get session status
+app.get '/session', (req, res) ->
+
+  if req.isAuthenticated()
+    res.json {
+      "authenticated": req.isAuthenticated()
+      "current_user" : {
+        id         : req.user.id
+        name       : req.user.name
+        email      : req.user.email
+        socialId   : req.user.socialId
+        socialType : req.user.socialType
+        social     : JSON.parse req.user.social
+        createdAt  : req.user.createdAt
+        updatedAt  : req.user.updatedAt
+      }
+    }
+  else
+    res.send 401
+
+# Logout handler
+app.get '/logout', (req, res) ->
+  req.logout()
+  res.redirect '/'
+
 # Home
 app.get '/', auth.middleware(), (req, res) ->
-  res.end 'Hello World!'
+  app.use express.static 'clients/web-app/build/'
+  res.sendfile 'clients/web-app/build/index.html'
 
-app.get '/login', (req, res) ->
-  app.use express['static']('src/views/login')
-  res.sendfile __dirname + '/src/views/login/login.html'
+# For every other route, check with auth
+app.use auth.middleware()
 
 # Listen
 app.listen app.get('port'), () ->

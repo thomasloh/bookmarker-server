@@ -101,22 +101,25 @@ Q
 
 <!-- Modules -->
 
-User authentication (social)
+✓ User authentication (social)
  - Session persistence
  - Facebook & Twitter
 
-Users API
+✓ Users API
 
+✓ Bookmarks API
 
+✓ UserBookmarks API
 
+✓ Platform Basic Test suite
 
-Bookmarks API
-
-Caching mechanism
-
-Message Queue
+Chrome app
 
 Light client app
+ - Angular.js
+ - Social count poller
+ - Float label (novel ux concepts)
+ - icon melon (https://www.evernote.com/shard/s8/sh/6a551850-1e34-457d-b6d6-065c20fbc248/ed7b199804345f99be0bee375f456843/deep/0/Trapit-(Trapit)-and-Sparrow-and-user-bookmark.coffee---test---leafy.png)
 
 Styling
 
@@ -125,6 +128,16 @@ Branding
 
 Deploy
  - Digital Ocean-
+
+
+ <!-- Future -->
+
+
+ Caching mechanism
+
+ Message Queue
+
+ More tests
 
 
 

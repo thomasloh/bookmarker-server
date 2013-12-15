@@ -101,7 +101,7 @@ class User extends BaseModel
       delete req._user
 
       # Respond
-      res.json user
+      res.json @deserialize user.values
 
     # ----------------------------------------------------------------
     # Creates a new user
@@ -114,7 +114,7 @@ class User extends BaseModel
       # Validate
       user
       .validate()
-      .success (errors) ->
+      .success (errors) =>
         # Send validation errors, if any
         if errors
           res.json {
@@ -124,9 +124,9 @@ class User extends BaseModel
         # Proceed to create user
           user
           .save()
-          .success (u) ->
+          .success (u) =>
             # 201 - User created
-            res.send 201, u.values
+            res.send 201, @deserialize u.values
           .error (errors) ->
             # 400 - Error creating user
             res.send 400, {
@@ -147,7 +147,7 @@ class User extends BaseModel
       .updateAttributes(req.body)
       .success (u) ->
         # 200 - User updated
-        res.send 200, u.values
+        res.send 200, @deserialize u.values
       .error (errors) ->
         # 400 - Send validation errors, if any
         res.send 400, {
@@ -159,7 +159,7 @@ class User extends BaseModel
     # ----------------------------------------------------------------
     @app.delete _p + '/users/:id/', (req, res) =>
 
-      return @error.CUSTOM_MESSAGE('Not allowed', res)
+      return @errors.CUSTOM_MESSAGE('Not allowed', res)
 
       # Grab user
       user = req._user

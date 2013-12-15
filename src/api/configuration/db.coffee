@@ -12,7 +12,7 @@ if mode == "prod"
   }
 else
   db_config = {
-    DB_NAME  : if mode is "test" then "leafydb_test" else "leafydb"
+    DB_NAME  : if mode is "test" then "leafydb_test" else "leafydb_dev"
     DB_USER  : 'thomasloh'
     DB_PASS  : null
     DB_URL   : 'localhost'

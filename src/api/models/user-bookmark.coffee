@@ -10,6 +10,8 @@ class UserBookmark extends BaseModel
 
     @app = app
 
+    # TODO: add user bookmarked count
+
     @model = sequelize.define 'UserBookmark', {
       facebook  : {
         type      : Sequelize.TEXT
@@ -65,22 +67,30 @@ class UserBookmark extends BaseModel
       delete req._user
 
       # Get user bookmarks
-      @api()
-      .$get('user-bookmark')
-      .findAll({
-        where: {
-          UserId: user.id
-        }
+      user
+      .getBookmarks({
+        attributes: [
+          'id'
+          'url'
+          'title'
+        ]
+        joinTableAttributes: [
+          'facebook'
+          'twitter'
+          'linkedin'
+          'pinterest'
+          'archived'
+        ]
       })
       .success (results) =>
         results = _.map results, (r) =>
-          @deserialize r.values
+          @deserialize _.extend r.values, r.UserBookmark.values
         res.send 200, results
 
     # ----------------------------------------------------------------
     # Creates bookmark(s) for a user
     # ----------------------------------------------------------------
-    @app.post _p + '/users/:id/bookmarks/', (req, res) =>
+    @app.post _p + '/users/:uid/bookmarks/', (req, res) =>
 
       # Grab user
       user = req._user
@@ -136,17 +146,30 @@ class UserBookmark extends BaseModel
       delete req._bookmark
 
       # Check for user bookmark existence first
-      @api()
-      .$get('user-bookmark')
-      .find({
+      user
+      # .hasBookmark(bookmark)
+      .getBookmarks({
         where: {
-          BookmarkId : bookmark.id
-          UserId     : user.id
+          'UserId': user.id
         }
+        attributes: [
+          'id'
+          'url'
+          'title'
+        ]
+        joinTableAttributes: [
+          'facebook'
+          'twitter'
+          'linkedin'
+          'pinterest'
+          'archived'
+        ]
       })
-      .success (userBookmark) =>
-        if userBookmark
-          res.json 200, @deserialize(userBookmark.values)
+      .success (results) =>
+        if results
+          results = _.map results, (r) =>
+            @deserialize _.extend r.values, r.UserBookmark.values
+          res.send results[0]
         else
           @errors.CUSTOM_MESSAGE 'User bookmark does not exists', res
 
@@ -220,7 +243,7 @@ class UserBookmark extends BaseModel
       .find({
         where: {
           BookmarkId : bookmark.id
-          UserId     : userId
+          UserId     : user.id
         }
       })
       .success (userBookmark) =>
@@ -231,7 +254,7 @@ class UserBookmark extends BaseModel
           .destroy()
           .success () ->
             # Decrement bookmark count
-            b.decrement 'count', 1
+            bookmark.decrement 'count', 1
 
             # Respond
             res.send 204
@@ -240,7 +263,6 @@ class UserBookmark extends BaseModel
             @errors.DB_ERROR errors, res
         else
           @errors.NOT_FOUND('user bookmark', res)
-
 
 # Exports
 module.exports = new UserBookmark

@@ -1,5 +1,6 @@
 --compilers coffee:coffee-script
 --reporter min
+--growl
 --ui bdd
 --recursive
 --colors
