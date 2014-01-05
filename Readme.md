@@ -113,18 +113,68 @@ Q
 
 ✓ Platform Basic Test suite
 
-Chrome app
+✓ Chrome extension app
 
-Light client app
+Light web app
  - Angular.js
  - Social count poller
  - Float label (novel ux concepts)
- - icon melon (https://www.evernote.com/shard/s8/sh/6a551850-1e34-457d-b6d6-065c20fbc248/ed7b199804345f99be0bee375f456843/deep/0/Trapit-(Trapit)-and-Sparrow-and-user-bookmark.coffee---test---leafy.png)
 
-Styling
+FUNCTIONALS
+------------------
+✓ Chrome extension app
+- ✓ Able to sign in
+- ✓ Able to save bookmark and store in db
+
+Web app
+- ✓ Able to sign in / sign out
+- ✓ Able to show all bookmarks by a user
+- ✓ Able to delete bookmark
+- ✓ [Behavioral] Able to open a bookmark ("deleting" the bookmark)
+- ✓ Able to show social activities of a bookmark (requires social poller)
+- ✓ The higher the social count the darker the number
+- Bookmarks saved self-destruct in 24 hours
+  - the closer its dying the less opaque it is
+- Notification mechanism
+- Moving background on login screen. video.js
+- About / Help
+
+STYLING
+------------------
+
+sidebar.io style
+
+Landing page
+
+Blog
+
+FAQ
 
 Branding
- - Logo
+ - 99designs logo contest
+
+Chrome extension app
+- Save on success notifier
+- Error notifier
+- Browser icon logo
+
+Web app
+- green, light
+- white
+- round
+- minimalistic
+- fast
+- no images
+- typography and white spaces to give focus to links/bookmarks
+
+
+MISC
+------------------
+Mobile version
+Https
+Sign up, email verification
+
+
 
 Deploy
  - Digital Ocean-
@@ -132,6 +182,9 @@ Deploy
 
  <!-- Future -->
 
+ - Remove polling and switch to long polling
+
+Google plus integrations
 
  Caching mechanism
 
@@ -139,6 +192,10 @@ Deploy
 
  More tests
 
+
+<!-- TODO -->
+
+separate web app, chrome ext and rest server into 3 git projects
 
 
 
@@ -148,6 +205,7 @@ Realtime bookmark clicking notify all clients - websockets
 
 
 Testing on API
+Write tests for counts/analytics
 Secure/separate out restAPI API Token
 
 

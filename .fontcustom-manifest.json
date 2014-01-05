@@ -1,0 +1,20 @@
+{
+  "fonts": [
+    "/Users/thomasloh/Dropbox/Developer/projects/leafy/fontcustom/fontcustom_7073a02f4cfed6b52d70589d7cd35942.ttf",
+    "/Users/thomasloh/Dropbox/Developer/projects/leafy/fontcustom/fontcustom_7073a02f4cfed6b52d70589d7cd35942.woff",
+    "/Users/thomasloh/Dropbox/Developer/projects/leafy/fontcustom/fontcustom_7073a02f4cfed6b52d70589d7cd35942.eot",
+    "/Users/thomasloh/Dropbox/Developer/projects/leafy/fontcustom/fontcustom_7073a02f4cfed6b52d70589d7cd35942.svg"
+  ],
+  "templates": [
+    "/Users/thomasloh/Dropbox/Developer/projects/leafy/fontcustom/fontcustom.css",
+    "/Users/thomasloh/Dropbox/Developer/projects/leafy/fontcustom/fontcustom-preview.html"
+  ],
+  "glyphs": [
+    "iconmonstr-bookmark-icon",
+    "iconmonstr-facebook-icon",
+    "iconmonstr-info-6-icon",
+    "iconmonstr-minus-5-icon",
+    "iconmonstr-refresh-3-icon",
+    "iconmonstr-twitter-icon"
+  ]
+}

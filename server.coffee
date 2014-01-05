@@ -3,6 +3,7 @@
 express    = require 'express'
 RedisStore = require('connect-redis') express
 modules    = require './src/modules'
+socketio   = require 'socket.io'
 
 # Get modules
 auth    = modules.auth
@@ -27,11 +28,15 @@ app.use express.session {
     port: 6379
   }
   cookie: {
-    maxAge: 3600000
+    maxAge: 604800000
   }
 }
 app.use express['static']('src/views/login')
 
+# Init io
+server = require('http').createServer app
+io = socketio.listen server
+app.set 'io', io
 
 # Server variables
 app.set 'port', 8005
@@ -89,5 +94,5 @@ app.get '/', auth.middleware(), (req, res) ->
 app.use auth.middleware()
 
 # Listen
-app.listen app.get('port'), () ->
+server.listen app.get('port'), () ->
   console.log 'Server started on port ' + app.get('port')

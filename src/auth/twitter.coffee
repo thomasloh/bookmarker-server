@@ -1,4 +1,4 @@
-# Import passport-twitter
+# Import modules
 TwitterStrategy = require('passport-twitter').Strategy
 
 $app = null
@@ -12,6 +12,8 @@ auth = {
     $app = app
 
     found = (token, tokenSecret, profile, done) =>
+
+      # Find/create user
       process.nextTick () =>
         twitterId = profile.id
 

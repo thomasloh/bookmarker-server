@@ -1,8 +1,10 @@
 # Import modules
-Sequelize    = require 'sequelize'
-User         = require './models/user'
-Bookmark     = require './models/bookmark'
-UserBookmark = require './models/user-bookmark'
+Sequelize         = require 'sequelize'
+User              = require './models/user'
+Bookmark          = require './models/bookmark'
+UserBookmark      = require './models/user-bookmark'
+OpenedBookmark    = require './models/opened-bookmark'
+SocialCountPoller = require './services/social-count-poller'
 
 # Constants
 _d      = require './configuration/db'
@@ -15,9 +17,10 @@ $app       = null
 
 # Internals
 models = {
-  'user'          : User
-  'bookmark'      : Bookmark
-  'user-bookmark' : UserBookmark
+  'user'            : User
+  'bookmark'        : Bookmark
+  'user-bookmark'   : UserBookmark
+  'opened-bookmark' : OpenedBookmark
 }
 
 # Facade
@@ -25,6 +28,12 @@ api = {
 
   prefix: () ->
     return '/' + PREFIX + '/' + VERSION
+
+  services: {
+
+    social_count_poller: SocialCountPoller
+
+  }
 
   # API setup phase
   setup: (app) ->
@@ -51,6 +60,7 @@ api = {
     User.setup $app, sequelize, Sequelize
     Bookmark.setup $app, sequelize, Sequelize
     UserBookmark.setup $app, sequelize, Sequelize
+    OpenedBookmark.setup $app, sequelize, Sequelize
 
     # Setup joins
     @$get('user').hasMany @$get('bookmark'), {
@@ -108,6 +118,7 @@ api = {
     User.expose()
     Bookmark.expose()
     UserBookmark.expose()
+    OpenedBookmark.expose()
 
     # ----------------------------------------------------------------
     # Test env only

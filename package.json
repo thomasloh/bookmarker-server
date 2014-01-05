@@ -18,10 +18,14 @@
     "passport-facebook": "~1.0.2",
     "underscore": "~1.5.2",
     "validator": "~2.0.0",
-    "sequelize": "~2.0.0-beta.2"
+    "sequelize": "~2.0.0-beta.2",
+    "moment": "~2.4.0",
+    "request": "~2.30.0",
+    "socket.io": "~0.9.16"
   },
   "devDependencies": {
     "supertest": "~0.8.2",
-    "chai": "~1.8.1"
+    "chai": "~1.8.1",
+    "cli-color": "~0.2.3"
   }
 }

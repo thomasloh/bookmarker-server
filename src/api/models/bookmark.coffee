@@ -24,7 +24,34 @@ class Bookmark extends BaseModel
           notEmpty : true
         }
       }
-      count     : {
+      host    : {
+        type: Sequelize.TEXT
+        validate: {
+          notEmpty : true
+        }
+      }
+      bookmarked_count : {
+        type: Sequelize.INTEGER
+        defaultValue: 0
+        validate: {
+          isNumeric: true
+        }
+      }
+      active_count     : {
+        type: Sequelize.INTEGER
+        defaultValue: 0
+        validate: {
+          isNumeric: true
+        }
+      }
+      opened_count     : {
+        type: Sequelize.INTEGER
+        defaultValue: 0
+        validate: {
+          isNumeric: true
+        }
+      }
+      archived_count     : {
         type: Sequelize.INTEGER
         defaultValue: 0
         validate: {
@@ -34,30 +61,30 @@ class Bookmark extends BaseModel
       facebook  : {
         type      : Sequelize.TEXT
         allowNull : true
-        validate: {
-          isValidFacebookData: _v.isValidFacebookData
-        }
+        # validate: {
+        #   isValidFacebookData: _v.isValidFacebookData
+        # }
       }
       twitter   : {
         type      : Sequelize.TEXT
         allowNull : true
-        validate: {
-          isValidTwitterData: _v.isValidTwitterData
-        }
+        # validate: {
+        #   isValidTwitterData: _v.isValidTwitterData
+        # }
       }
       linkedin  : {
         type      : Sequelize.TEXT
         allowNull : true
-        validate: {
-          isValidLinkedInData: _v.isValidLinkedInData
-        }
+        # validate: {
+        #   isValidLinkedInData: _v.isValidLinkedInData
+        # }
       }
       pinterest : {
         type      : Sequelize.TEXT
         allowNull : true
-        validate: {
-          isValidPinterestData: _v.isValidPinterestData
-        }
+        # validate: {
+        #   isValidPinterestData: _v.isValidPinterestData
+        # }
       }
     }
 
