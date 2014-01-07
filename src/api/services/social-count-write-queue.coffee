@@ -48,7 +48,9 @@ _save = (ub, bookmark, type, data) ->
   o[type] = JSON.stringify ubs
 
   ub
-  .updateAttributes(o)
+  .updateAttributes _.extend o, {
+    updatedAt  : moment(Date.now()).utc().format()
+  }
   .error (e) ->
     console.log('Problem saving social data to user bookmark')
     console.log(e)

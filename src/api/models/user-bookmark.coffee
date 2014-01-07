@@ -21,6 +21,7 @@ class UserBookmark extends BaseModel
     # TODO: add user bookmarked count
 
     @model = sequelize.define 'UserBookmark', {
+
       facebook  : {
         type      : Sequelize.TEXT
         allowNull : true
@@ -55,7 +56,14 @@ class UserBookmark extends BaseModel
         references: "Users"
         referencesKey: "id"
       }
-
+      created_at: {
+        type: Sequelize.DATE
+      }
+      updated_at: {
+        type: Sequelize.DATE
+      }
+    }, {
+      # timestamps: false
     }
 
   expose: () ->
@@ -72,244 +80,289 @@ class UserBookmark extends BaseModel
     # Get prefix
     _p = @api().prefix()
 
-    # ----------------------------------------------------------------
-    # Gets all bookmarks of a user
-    # ----------------------------------------------------------------
-    @app.get _p + '/users/:id/bookmarks/', (req, res) =>
+    # Open web socket
+    @app.get('io').sockets.on 'connection', (socket) =>
 
-      # Grab user
-      user = req._user
-      delete req._user
+      # ----------------------------------------------------------------
+      # Gets all bookmarks of a user
+      # ----------------------------------------------------------------
+      @app.get _p + '/users/:id/bookmarks/', (req, res) =>
 
-      # Get user bookmarks
-      user
-      .getBookmarks({
-        where: {
-          'archived': false
-          'opened'  : false
-        }
-        attributes: [
-          'Bookmarks.id'
-          'Bookmarks.url'
-          'Bookmarks.title'
-          'Bookmarks.host'
-        ]
-        joinTableAttributes: [
-          'facebook'
-          'twitter'
-          'linkedin'
-          'pinterest'
-          'createdAt'
-        ]
-      })
-      .success (results) =>
-        results = _.map results, (r) =>
-          @deserialize _.extend r.values, r.UserBookmark.values
-        res.send 200, results
+        # Grab user
+        user = req._user
+        delete req._user
 
-    # ----------------------------------------------------------------
-    # Creates bookmark(s) for a user
-    # ----------------------------------------------------------------
-    @app.post _p + '/users/:uid/bookmarks/', (req, res) =>
-
-      # Grab user
-      user = req._user
-      delete req._user
-
-      # Grab single bookmark
-      bookmark = @serialize req.body
-      url      = bookmark.url
-      host     = url_util.parse(url).host
-      delete bookmark.url
-
-      # Next, create/find the bookmark
-      @api()
-      .$get('bookmark')
-      .findOrCreate({
-        'url'  : url
-        'host' : host
-      }, bookmark)
-      .error (errors) =>
-        @errors.DB_ERROR(errors, res)
-      .success (b) =>
-
-        # Increment bookmark count
-        b.increment 'bookmarked_count', {
-          by: 1
-        }
-        b.increment 'active_count', {
-          by: 1
-        }
-
-        # Check for existence first
-        @api()
-        .$get('user-bookmark')
-        .find({
+        # Get user bookmarks
+        user
+        .getBookmarks({
           where: {
-            BookmarkId : b.id
-            UserId     : user.id
+            'archived': false
+            'opened'  : false
           }
+          attributes: [
+            'Bookmarks.id'
+            'Bookmarks.url'
+            'Bookmarks.title'
+            'Bookmarks.host'
+          ]
+          joinTableAttributes: [
+            'facebook'
+            'twitter'
+            'linkedin'
+            'pinterest'
+            'created_at'
+          ]
         })
-        .success (userBookmark) =>
+        .success (results) =>
+          results = _.map results, (r) =>
+            @deserialize _.extend r.values, r.UserBookmark.values
+          res.send 200, results
 
-          # User bookmark already exists
-          if userBookmark
+      # ----------------------------------------------------------------
+      # Creates bookmark(s) for a user
+      # ----------------------------------------------------------------
+      @app.post _p + '/users/:uid/bookmarks/', (req, res) =>
 
-            # Re-bookmark
-            if userBookmark.values.archived or userBookmark.values.opened
-              # Unarchive
-              userBookmark
-              .updateAttributes({
-                'archived': false
-                'opened'  : false
-              })
-              .success (ub) =>
+        # Grab user
+        user = req._user
+        delete req._user
 
-                # Add to squeue
-                sqeueu.push {
-                  user_bookmark : ub
-                  bookmark      : b
-                }
+        # Grab single bookmark
+        bookmark = @serialize req.body
+        url      = bookmark.url
+        host     = url_util.parse(url).host
+        delete bookmark.url
 
-                res.json 201, @deserialize ub.values
+        # Next, create/find the bookmark
+        @api()
+        .$get('bookmark')
+        .findOrCreate({
+          'url'  : url
+          'host' : host
+        }, bookmark)
+        .error (errors) =>
+          @errors.DB_ERROR(errors, res)
+        .success (b) =>
+
+          # Increment bookmark count
+          b.increment 'bookmarked_count', {
+            by: 1
+          }
+          b.increment 'active_count', {
+            by: 1
+          }
+
+          # Check for existence first
+          @api()
+          .$get('user-bookmark')
+          .find({
+            where: {
+              BookmarkId : b.id
+              UserId     : user.id
+            }
+          })
+          .success (userBookmark) =>
+
+            # User bookmark already exists
+            if userBookmark
+
+              # Re-bookmark
+              if userBookmark.values.archived or userBookmark.values.opened
+
+                # Unarchive
+                userBookmark
+                .updateAttributes({
+                  'archived' : false
+                  'opened'   : false
+                  'created_at': moment(Date.now()).utc().format()
+                  'updated_at': moment(Date.now()).utc().format()
+                })
+                .success (ub) =>
+
+                  # Add to squeue
+                  sqeueu.push {
+                    user_bookmark : ub
+                    bookmark      : b
+                  }
+
+                  res.json 201, @deserialize ub.values
+
+                # Start timer to archive it
+                _.delay () =>
+
+                  # Archive it
+                  if userBookmark
+                    userBookmark
+                    .updateAttributes({
+                      'archived': true
+                    })
+                    .success () ->
+                      # Decrement bookmark active count
+                      b.decrement 'active_count', {
+                        by: 1
+                      }
+                      # Increment archived count
+                      b.increment 'archived_count', {
+                        by: 1
+                      }
+
+                , 60 * 1000 * 60 * 24 # 24 hours
+
+              else
+                @errors.CUSTOM_MESSAGE('User bookmark already exists.', res);
 
             else
-              @errors.CUSTOM_MESSAGE('User bookmark already exists.', res);
 
-          else
-
-            # Then create user bookmark
-            user
-            .addBookmark(b)
-            .success (bookmark_created) =>
-
-              # Respond
-              res.json 201, @deserialize bookmark_created.values
-
-              # Get user bookmark created
+              # Then create user bookmark
               @api()
               .$get('user-bookmark')
-              .find({
-                where: {
-                  BookmarkId : b.id
-                  UserId     : user.id
-                }
+              .create({
+                BookmarkId : b.id
+                UserId     : user.id
+                created_at  : moment(Date.now()).utc().format()
+                updated_at  : moment(Date.now()).utc().format()
               })
-              .success (user_bookmark_created) ->
+              .success (user_bookmark_created) =>
+
+                # Respond
+                res.json 201, @deserialize b.values
+
+                # Start timer to archive it
+                _.delay () =>
+
+                  # Archive it
+                  if user_bookmark_created
+                    user_bookmark_created
+                    .updateAttributes({
+                      'archived'  : true
+                      'updated_at' : moment(Date.now()).utc().format()
+                    })
+                    .success () ->
+                      # Decrement bookmark active count
+                      b.decrement 'active_count', {
+                        by: 1
+                      }
+                      # Increment archived count
+                      b.increment 'archived_count', {
+                        by: 1
+                      }
+
+                , 60 * 1000 * 60 * 24 # 24 hours
+
                 # Add to squeue
                 sqeueu.push {
                   user_bookmark : user_bookmark_created
                   bookmark      : b
                 }
 
-            .error (e) =>
-              @errors.DB_ERROR errors, res
+              .error (e) =>
+                @errors.DB_ERROR errors, res
 
-    # ----------------------------------------------------------------
-    # Get specific bookmark for a user
-    # ----------------------------------------------------------------
-    @app.get _p + '/users/:uid/bookmarks/:bid/', (req, res) =>
+      # ----------------------------------------------------------------
+      # Get specific bookmark for a user
+      # ----------------------------------------------------------------
+      @app.get _p + '/users/:uid/bookmarks/:bid/', (req, res) =>
 
-      # Grab user
-      user = req._user
-      delete req._user
+        # Grab user
+        user = req._user
+        delete req._user
 
-      # Grab bookmark
-      bookmark = req._bookmark
-      delete req._bookmark
+        # Grab bookmark
+        bookmark = req._bookmark
+        delete req._bookmark
 
-      # Get the bookmark requested
-      user
-      .getBookmarks({
-        where: {
-          'UserId'  : user.id
-          'archived': false
-          'opened'  : false
+        # Get the bookmark requested
+        user
+        .getBookmarks({
+          where: {
+            'UserId'  : user.id
+            'archived': false
+            'opened'  : false
+          }
+          attributes: [
+            'id'
+            'url'
+            'title'
+          ]
+          joinTableAttributes: [
+            'facebook'
+            'twitter'
+            'linkedin'
+            'pinterest'
+          ]
+        })
+        .success (results) =>
+
+          if results and !!results.length
+            results = _.map results, (r) =>
+              @deserialize _.extend r.values, r.UserBookmark.values
+            res.send results[0]
+          else
+            @errors.CUSTOM_MESSAGE 'User bookmark does not exists', res
+
+      # ----------------------------------------------------------------
+      # Open specific bookmark for a user
+      # ----------------------------------------------------------------
+      @app.patch _p + '/users/:uid/bookmarks/:bid/', (req, res) =>
+
+        # Grab user
+        user = req._user
+        delete req._user
+
+        # Grab bookmark
+        bookmark = req._bookmark
+        delete req._bookmark
+
+        # Update opened count
+        bookmark
+        .increment 'opened_count', {
+          by: 1
         }
-        attributes: [
-          'id'
-          'url'
-          'title'
-        ]
-        joinTableAttributes: [
-          'facebook'
-          'twitter'
-          'linkedin'
-          'pinterest'
-        ]
-      })
-      .success (results) =>
+        bookmark
+        .decrement 'active_count', {
+          by: 1
+        }
 
-        if results and !!results.length
-          results = _.map results, (r) =>
-            @deserialize _.extend r.values, r.UserBookmark.values
-          res.send results[0]
-        else
-          @errors.CUSTOM_MESSAGE 'User bookmark does not exists', res
-
-    # ----------------------------------------------------------------
-    # Open specific bookmark for a user
-    # ----------------------------------------------------------------
-    @app.patch _p + '/users/:uid/bookmarks/:bid/', (req, res) =>
-
-      # Grab user
-      user = req._user
-      delete req._user
-
-      # Grab bookmark
-      bookmark = req._bookmark
-      delete req._bookmark
-
-      # Update opened count
-      bookmark
-      .increment 'opened_count', {
-        by: 1
-      }
-      bookmark
-      .decrement 'active_count', {
-        by: 1
-      }
-
-      # Update opened bookmark table
-      @api()
-      .$get('opened-bookmark')
-      .create({
-        BookmarkId : bookmark.id
-        UserId     : user.id
-      })
-      .success (ob) ->
-        console.log 'Opened bookmark logged successfully'
-      .error (e) ->
-        throw new Error "Error logging timestamp for opened bookmark: #{ e }"
-
-
-      # Find user bookmark
-      @api()
-      .$get('user-bookmark')
-      .find({
-        where: {
+        # Update opened bookmark table
+        @api()
+        .$get('opened-bookmark')
+        .create({
           BookmarkId : bookmark.id
           UserId     : user.id
-        }
-      })
-      .success (userBookmark) =>
-
-        if userBookmark
-          userBookmark
-          .updateAttributes({
-            'opened'  : true
-          })
-
-      .error () ->
-        throw new Error 'Error updating user bookmark while opening bookmark'
+        })
+        .success (ob) ->
+          console.log 'Opened bookmark logged successfully'
+        .error (e) ->
+          throw new Error "Error logging timestamp for opened bookmark: #{ e }"
 
 
-      res.send 200
+        # Find user bookmark
+        @api()
+        .$get('user-bookmark')
+        .find({
+          where: {
+            BookmarkId : bookmark.id
+            UserId     : user.id
+          }
+        })
+        .success (userBookmark) =>
 
-    # ----------------------------------------------------------------
-    # Poll user bookmark social data
-    # ----------------------------------------------------------------
-    @app.get('io').sockets.on 'connection', (socket) =>
+          if userBookmark
+            userBookmark
+            .updateAttributes({
+              'opened'     : true
+              'updated_at'  : moment(Date.now()).utc().format()
+            })
+
+        .error () ->
+          throw new Error 'Error updating user bookmark while opening bookmark'
+
+
+        res.send 200
+
+      # ----------------------------------------------------------------
+      # Poll user bookmark social data
+      # ----------------------------------------------------------------
 
       socket.on 'poll:start', (data) =>
 
@@ -406,104 +459,107 @@ class UserBookmark extends BaseModel
             }
           }
 
-    # ----------------------------------------------------------------
-    # Update bookmark for a user
-    # ----------------------------------------------------------------
-    @app.put _p + '/users/:uid/bookmarks/:bid/', (req, res) =>
+      # ----------------------------------------------------------------
+      # Update bookmark for a user
+      # ----------------------------------------------------------------
+      @app.put _p + '/users/:uid/bookmarks/:bid/', (req, res) =>
 
-      # Grab user
-      user = req._user
-      delete req._user
+        # Grab user
+        user = req._user
+        delete req._user
 
-      # Grab bookmark
-      bookmark = req._bookmark
-      delete req._bookmark
+        # Grab bookmark
+        bookmark = req._bookmark
+        delete req._bookmark
 
-      # Grab bookmark body
-      validJSON = true
-      try
-        JSON.stringify req.body
-      catch e
-        validJSON = false
+        # Grab bookmark body
+        validJSON = true
+        try
+          JSON.stringify req.body
+        catch e
+          validJSON = false
 
-      if !validJSON
-        return @errors.CUSTOM_MESSAGE 'Must provide valid JSON', res
+        if !validJSON
+          return @errors.CUSTOM_MESSAGE 'Must provide valid JSON', res
 
-      bookmarkBody = @serialize(req.body)
+        bookmarkBody = @serialize(req.body)
 
-      # Check for user bookmark existence first
-      @api()
-      .$get('user-bookmark')
-      .find({
-        where: {
-          BookmarkId : bookmark.id
-          UserId     : user.id
-        }
-      })
-      .success (userBookmark) =>
+        # Check for user bookmark existence first
+        @api()
+        .$get('user-bookmark')
+        .find({
+          where: {
+            BookmarkId : bookmark.id
+            UserId     : user.id
+          }
+        })
+        .success (userBookmark) =>
 
-        # Updates user bookmark
-        if userBookmark and not userBookmark.values.archived
+          # Updates user bookmark
+          if userBookmark and not userBookmark.values.archived
 
-          userBookmark
-          .updateAttributes(bookmarkBody)
-          .success (ub) =>
-            # Respond
-            res.json 200, @deserialize(ub.values)
-          .error (errors) ->
-            res.send 400, {
-              errors: errors
+            userBookmark
+            .updateAttributes _.extend bookmarkBody, {
+              updated_at  : moment(Date.now()).utc().format()
             }
-        else
-          @errors.NOT_FOUND('user bookmark', res)
+            .success (ub) =>
+              # Respond
+              res.json 200, @deserialize(ub.values)
+            .error (errors) ->
+              res.send 400, {
+                errors: errors
+              }
+          else
+            @errors.NOT_FOUND('user bookmark', res)
 
-    # ----------------------------------------------------------------
-    # Delete bookmark øf a user
-    # ----------------------------------------------------------------
-    @app.delete _p + '/users/:uid/bookmarks/:bid/', (req, res) =>
+      # ----------------------------------------------------------------
+      # Delete bookmark øf a user
+      # ----------------------------------------------------------------
+      @app.delete _p + '/users/:uid/bookmarks/:bid/', (req, res) =>
 
-      # Grab user
-      user = req._user
-      delete req._user
+        # Grab user
+        user = req._user
+        delete req._user
 
-      # Grab bookmark
-      bookmark = req._bookmark
-      delete req._bookmark
+        # Grab bookmark
+        bookmark = req._bookmark
+        delete req._bookmark
 
-      # Check for existence first
-      @api()
-      .$get('user-bookmark')
-      .find({
-        where: {
-          BookmarkId : bookmark.id
-          UserId     : user.id
-        }
-      })
-      .success (userBookmark) =>
+        # Check for existence first
+        @api()
+        .$get('user-bookmark')
+        .find({
+          where: {
+            BookmarkId : bookmark.id
+            UserId     : user.id
+          }
+        })
+        .success (userBookmark) =>
 
-        # Archive user bookmark
-        if userBookmark
-          userBookmark
-          .updateAttributes({
-            'archived': true
-          })
-          .success () ->
-            # Decrement bookmark active count
-            bookmark.decrement 'active_count', {
-              by: 1
-            }
-            # Increment archived count
-            bookmark.increment 'archived_count', {
-              by: 1
-            }
+          # Archive user bookmark
+          if userBookmark
+            userBookmark
+            .updateAttributes({
+              'archived'  : true
+              'updated_at' : moment(Date.now()).utc().format()
+            })
+            .success () ->
+              # Decrement bookmark active count
+              bookmark.decrement 'active_count', {
+                by: 1
+              }
+              # Increment archived count
+              bookmark.increment 'archived_count', {
+                by: 1
+              }
 
-            # Respond
-            res.send 204
+              # Respond
+              res.send 204
 
-          .error (errors) =>
-            @errors.DB_ERROR errors, res
-        else
-          @errors.NOT_FOUND('user bookmark', res)
+            .error (errors) =>
+              @errors.DB_ERROR errors, res
+          else
+            @errors.NOT_FOUND('user bookmark', res)
 
 # Exports
 module.exports = new UserBookmark
