@@ -114,9 +114,44 @@ class UserBookmark extends BaseModel
           ]
         })
         .success (results) =>
-          results = _.map results, (r) =>
+
+          actual = []
+
+          # Archive it
+          _.each results, (o) =>
+            created = moment o.UserBookmark.get('created_at')
+            current = moment Date.now()
+            console.log(current.diff(created, 'hours'))
+            if current.diff(created, 'hours') >= 24
+              @api()
+              .$get('user-bookmark')
+              .find({
+                where: {
+                  BookmarkId : o.id
+                  UserId     : user.id
+                }
+              })
+              .success (ub) =>
+                ub
+                .updateAttributes({
+                  'archived': true
+                })
+                .success () ->
+                  # Decrement bookmark active count
+                  o.decrement 'active_count', {
+                    by: 1
+                  }
+                  # Increment archived count
+                  o.increment 'archived_count', {
+                    by: 1
+                  }
+            else
+              actual.push o
+
+          # Send out
+          actual = _.map actual, (r) =>
             @deserialize _.extend r.values, r.UserBookmark.values
-          res.send 200, results
+          res.send 200, actual
 
       # ----------------------------------------------------------------
       # Creates bookmark(s) for a user

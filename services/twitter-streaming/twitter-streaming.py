@@ -36,6 +36,6 @@ class TwitterStreamer(TwythonStreamer):
 
 stream = TwitterStreamer(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
 # stream.statuses.filter(locations='-122.75,36.8,-121.75,37.8')
-stream.statuses.filter(track='christmas')
+stream.statuses.filter(track='#js')
 
 

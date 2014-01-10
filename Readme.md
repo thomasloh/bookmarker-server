@@ -133,10 +133,10 @@ Web app
 - ✓ [Behavioral] Able to open a bookmark ("deleting" the bookmark)
 - ✓ Able to show social activities of a bookmark (requires social poller)
 - ✓ The higher the social count the darker the number
+- Add a top horizontal spanning bar (minimal) (http://alexmaccaw.com/)
 - Bookmarks saved self-destruct in 24 hours
   - the closer its dying the less opaque it is
 - Notification mechanism
-- Moving background on login screen. video.js
 - About / Help
 
 STYLING
@@ -145,10 +145,9 @@ STYLING
 sidebar.io style
 
 Landing page
+- Moving background on login screen. video.js
 
 Blog
-
-FAQ
 
 Branding
  - 99designs logo contest
@@ -157,6 +156,7 @@ Chrome extension app
 - Save on success notifier
 - Error notifier
 - Browser icon logo
+- keyboard shortcut
 
 Web app
 - green, light
@@ -195,9 +195,6 @@ Google plus integrations
 
 <!-- TODO -->
 
-separate web app, chrome ext and rest server into 3 git projects
-
-
 
 Possible features
 
@@ -208,6 +205,4 @@ Testing on API
 Write tests for counts/analytics
 Secure/separate out restAPI API Token
 
-
-TODO:
 
