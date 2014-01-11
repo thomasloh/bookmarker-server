@@ -1,8 +1,7 @@
 
-
 What?
 
-A bookmarking service that helps users deal with information overload on the web
+A bookmarking service
 
 
 
@@ -93,7 +92,6 @@ Express
 Mocha, Karma
 Redis
 Postgres (Sequelize)
-RabbitMQ
 Passport
 Moment
 Q
@@ -114,95 +112,4 @@ Q
 ✓ Platform Basic Test suite
 
 ✓ Chrome extension app
-
-Light web app
- - Angular.js
- - Social count poller
- - Float label (novel ux concepts)
-
-FUNCTIONALS
-------------------
-✓ Chrome extension app
-- ✓ Able to sign in
-- ✓ Able to save bookmark and store in db
-
-Web app
-- ✓ Able to sign in / sign out
-- ✓ Able to show all bookmarks by a user
-- ✓ Able to delete bookmark
-- ✓ [Behavioral] Able to open a bookmark ("deleting" the bookmark)
-- ✓ Able to show social activities of a bookmark (requires social poller)
-- ✓ The higher the social count the darker the number
-- Add a top horizontal spanning bar (minimal) (http://alexmaccaw.com/)
-- Bookmarks saved self-destruct in 24 hours
-  - the closer its dying the less opaque it is
-- Notification mechanism
-- About / Help
-
-STYLING
-------------------
-
-sidebar.io style
-
-Landing page
-- Moving background on login screen. video.js
-
-Blog
-
-Branding
- - 99designs logo contest
-
-Chrome extension app
-- Save on success notifier
-- Error notifier
-- Browser icon logo
-- keyboard shortcut
-
-Web app
-- green, light
-- white
-- round
-- minimalistic
-- fast
-- no images
-- typography and white spaces to give focus to links/bookmarks
-
-
-MISC
-------------------
-Mobile version
-Https
-Sign up, email verification
-
-
-
-Deploy
- - Digital Ocean-
-
-
- <!-- Future -->
-
- - Remove polling and switch to long polling
-
-Google plus integrations
-
- Caching mechanism
-
- Message Queue
-
- More tests
-
-
-<!-- TODO -->
-
-
-Possible features
-
-Realtime bookmark clicking notify all clients - websockets
-
-
-Testing on API
-Write tests for counts/analytics
-Secure/separate out restAPI API Token
-
 
